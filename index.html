@@ -262,6 +262,15 @@
     padding:10px 14px;border-radius:4px;margin-bottom:14px;
   }
   .payment-badge b{color:var(--cream);}
+  .order-type-toggle{
+    display:flex;gap:10px;margin:0 24px 16px;
+  }
+  .ot-btn{
+    flex:1;background:transparent;border:1.5px solid rgba(255,255,255,0.15);color:var(--ash);
+    padding:12px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:0.8rem;
+    font-weight:700;cursor:pointer;transition:all .2s;
+  }
+  .ot-btn.active{background:var(--ember);border-color:var(--ember);color:var(--char);}
   .cart-body{flex:1;overflow-y:auto;padding:18px 24px;}
   .cart-empty{color:var(--ash);font-size:0.92rem;text-align:center;margin-top:40px;}
   .cart-row{
@@ -349,6 +358,20 @@
     .menu-item{flex-direction:column;}
   }
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDOhrQ6G5VKJeEUWT3npuUkFdzLZmMtMXs",
+    authDomain: "hot-n-spice-8c752.firebaseapp.com",
+    projectId: "hot-n-spice-8c752",
+    storageBucket: "hot-n-spice-8c752.firebasestorage.app",
+    messagingSenderId: "596207600859",
+    appId: "1:596207600859:web:cc358d26b712b0060cb8fe"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+</script>
 </head>
 <body>
 <div class="grain"></div>
@@ -363,17 +386,21 @@
     <h3>Your Order</h3>
     <button class="cart-close" id="cartClose" type="button">✕</button>
   </div>
-  <div class="pickup-note">🛍️ Self Pickup — order now, collect from the restaurant</div>
+  <div class="order-type-toggle">
+    <button type="button" class="ot-btn active" id="otDineIn">🍽️ Dine-in (Table)</button>
+    <button type="button" class="ot-btn" id="otParcel">🥡 Parcel (Takeaway)</button>
+  </div>
   <div class="cart-body" id="cartBody">
     <div class="cart-empty">Your cart is empty — add something spicy.</div>
   </div>
-  <div class="cart-foot">
+  <div class="cart-foot" id="cartFoot">
     <div class="cart-total"><span>Total</span><span id="cartTotal">₹ 0</span></div>
     <input class="cart-field" id="custName" placeholder="Your name" type="text">
     <input class="cart-field" id="custPhone" placeholder="Your phone number" type="tel">
-    <input class="cart-field" id="custTime" placeholder="Pickup time (e.g. 6:30 PM)" type="text">
-    <div class="payment-badge">💵 Payment: <b>Cash on Pickup</b></div>
-    <button class="whatsapp-btn" id="sendOrder" type="button">Send Order on WhatsApp</button>
+    <input class="cart-field" id="custTable" placeholder="Table number" type="text">
+    <input class="cart-field" id="custTime" placeholder="Pickup time (e.g. 6:30 PM)" type="text" style="display:none;">
+    <div class="payment-badge">💵 Payment: <b>Cash (pay at counter/table)</b></div>
+    <button class="whatsapp-btn" id="sendOrder" type="button">Place Order</button>
   </div>
 </aside>
 
@@ -811,8 +838,8 @@
   revealEls.forEach(el=>io.observe(el));
 
   // ---------- cart ----------
-  const ORDER_WHATSAPP_NUMBER = "917304765335"; // country code 91 + WhatsApp order number
   let cart = []; // {name, price, qty}
+  let orderType = 'Dine-in';
 
   const cartFab = document.getElementById('cartFab');
   const cartBadge = document.getElementById('cartBadge');
@@ -820,14 +847,30 @@
   const cartDrawer = document.getElementById('cartDrawer');
   const cartClose = document.getElementById('cartClose');
   const cartBody = document.getElementById('cartBody');
+  const cartFoot = document.getElementById('cartFoot');
   const cartTotal = document.getElementById('cartTotal');
   const sendOrderBtn = document.getElementById('sendOrder');
+  const otDineIn = document.getElementById('otDineIn');
+  const otParcel = document.getElementById('otParcel');
+  const custTable = document.getElementById('custTable');
+  const custTime = document.getElementById('custTime');
 
   function openCart(){ cartOverlay.classList.add('open'); cartDrawer.classList.add('open'); }
   function closeCart(){ cartOverlay.classList.remove('open'); cartDrawer.classList.remove('open'); }
   cartFab.addEventListener('click', openCart);
   cartClose.addEventListener('click', closeCart);
   cartOverlay.addEventListener('click', closeCart);
+
+  otDineIn.addEventListener('click', ()=>{
+    orderType = 'Dine-in';
+    otDineIn.classList.add('active'); otParcel.classList.remove('active');
+    custTable.style.display = ''; custTime.style.display = 'none';
+  });
+  otParcel.addEventListener('click', ()=>{
+    orderType = 'Parcel';
+    otParcel.classList.add('active'); otDineIn.classList.remove('active');
+    custTable.style.display = 'none'; custTime.style.display = '';
+  });
 
   function addToCart(name, price, btn){
     const existing = cart.find(i => i.name === name);
@@ -888,28 +931,89 @@
   }
   window.__cartChangeQty = changeQty;
 
-  sendOrderBtn.addEventListener('click', ()=>{
+  sendOrderBtn.addEventListener('click', async ()=>{
     if(cart.length === 0){ openCart(); return; }
     const name = document.getElementById('custName').value.trim();
     const phone = document.getElementById('custPhone').value.trim();
-    const time = document.getElementById('custTime').value.trim();
+    const table = custTable.value.trim();
+    const time = custTime.value.trim();
 
     let total = 0;
-    let lines = cart.map(i=>{
+    const items = cart.map(i=>{
       total += i.price * i.qty;
-      return `• ${i.name} x${i.qty} — ₹${i.price * i.qty}`;
-    }).join('\n');
+      return { name: i.name, price: i.price, qty: i.qty };
+    });
 
-    let msg = `*New Self-Pickup Order — Hot 'N' Spice*\n\n${lines}\n\n*Total: ₹${total}*\n`;
-    msg += `\n*Name:* ${name || 'Not provided'}`;
-    msg += `\n*Phone:* ${phone || 'Not provided'}`;
-    msg += `\n*Pickup Time:* ${time || 'As soon as ready'}`;
-    msg += `\n*Payment:* Cash on Pickup`;
-    msg += `\n\n_Customer will come in person to collect this order._`;
+    const order = {
+      items,
+      total,
+      name: name || 'Not provided',
+      phone: phone || 'Not provided',
+      orderType,
+      tableNumber: orderType === 'Dine-in' ? (table || 'Not provided') : null,
+      pickupTime: orderType === 'Parcel' ? (time || 'ASAP') : null,
+      payment: 'Cash (pay at counter/table)',
+      status: 'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
 
-    const url = `https://wa.me/${ORDER_WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-    window.open(url, '_blank');
+    sendOrderBtn.disabled = true;
+    sendOrderBtn.textContent = 'Placing order...';
+    try{
+      await db.collection('orders').add(order);
+      cartBody.innerHTML = '<div class="cart-empty">✅ Order placed! Your order has gone to the kitchen — no need to wait here, just relax.</div>';
+      cartFoot.style.display = 'none';
+      cart = [];
+      cartBadge.textContent = '0';
+      setTimeout(()=>{
+        closeCart();
+        cartFoot.style.display = '';
+        sendOrderBtn.disabled = false;
+        sendOrderBtn.textContent = 'Place Order';
+        renderCart();
+      }, 3200);
+    }catch(err){
+      console.error(err);
+      sendOrderBtn.disabled = false;
+      sendOrderBtn.textContent = 'Place Order';
+      alert('Order bhejne mein dikkat hui, dobara try karein.');
+    }
   });
+
+  // ---------- live prices from Firestore ----------
+  function formatButtonLabel(name, price){
+    if(name.endsWith('(Half)')) return `+ Half ₹${price}`;
+    if(name.endsWith('(Full)')) return `+ Full ₹${price}`;
+    return `+ Add`;
+  }
+  function applyPrices(pricesMap){
+    document.querySelectorAll('[data-name]').forEach(el=>{
+      const name = el.dataset.name;
+      if(!(name in pricesMap)) return;
+      const price = pricesMap[name];
+      el.dataset.price = price;
+      if(el.tagName === 'BUTTON'){
+        el.textContent = formatButtonLabel(name, price);
+        el.dataset.label = el.textContent;
+      } else {
+        const priceSpan = el.querySelector('.price');
+        if(priceSpan) priceSpan.textContent = '₹ ' + price;
+      }
+    });
+  }
+
+  db.collection('menu').doc('prices').get().then(doc=>{
+    if(doc.exists){
+      applyPrices(doc.data());
+    } else {
+      // seed Firestore with the current default prices so the admin panel has something to edit
+      const defaults = {};
+      document.querySelectorAll('[data-name][data-price]').forEach(el=>{
+        defaults[el.dataset.name] = parseFloat(el.dataset.price);
+      });
+      db.collection('menu').doc('prices').set(defaults).catch(e=>console.error(e));
+    }
+  }).catch(e=>console.error(e));
 </script>
 </body>
 </html>
