@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hot 'N' Spice — Shawarma That Hits Different</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:ital,wght@0,400;0,500;0,700;0,900;1,700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --char:#140F0C;
+    --char-2:#1F1712;
+    --ember:#E4531B;
+    --ember-dim:#9c3712;
+    --deep-red:#A31D1D;
+    --gold:#E8B23D;
+    --cream:#F3E9D8;
+    --ash:#a99b8b;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--char);
+    color:var(--cream);
+    font-family:'DM Sans',sans-serif;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{
+    font-family:'Anton',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    line-height:0.95;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;text-decoration:none;}
+
+  /* ---------- texture ---------- */
+  .grain{
+    position:fixed;inset:0;pointer-events:none;z-index:50;opacity:0.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- nav ---------- */
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:40;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 6vw;
+    background:linear-gradient(to bottom, rgba(20,15,12,0.95), rgba(20,15,12,0));
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-size:1.3rem;}
+  .logo .flame{color:var(--ember);font-size:1.4rem;animation:flicker 2.4s infinite ease-in-out;}
+  .logo .n{color:var(--deep-red);}
+  @keyframes flicker{
+    0%,100%{transform:scale(1) rotate(-2deg);opacity:1;}
+    50%{transform:scale(1.12) rotate(2deg);opacity:0.85;}
+  }
+  nav a{
+    margin-left:26px;font-size:0.82rem;letter-spacing:0.12em;text-transform:uppercase;
+    font-weight:700;color:var(--ash);border-bottom:2px solid transparent;padding-bottom:4px;
+    transition:color .2s, border-color .2s;
+  }
+  nav a:hover{color:var(--gold);border-color:var(--ember);}
+  .nav-cta{
+    background:var(--ember);color:var(--char)!important;padding:10px 18px;border-radius:2px;
+    font-weight:900!important;border:none!important;
+  }
+  .menu-toggle{display:none;}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;min-height:100svh;display:flex;align-items:flex-end;
+    background:#000;
+  }
+  .hero-img{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    object-position:75% 55%;
+    filter:contrast(1.05) saturate(1.08);
+  }
+  .hero-scrim{
+    position:absolute;inset:0;
+    background:
+      linear-gradient(100deg, rgba(10,7,5,0.97) 0%, rgba(10,7,5,0.88) 28%, rgba(10,7,5,0.35) 52%, rgba(10,7,5,0.15) 70%),
+      linear-gradient(to top, rgba(10,7,5,0.95) 0%, rgba(10,7,5,0.15) 40%, rgba(10,7,5,0.1) 60%);
+  }
+  .hero-content{
+    position:relative;z-index:2;padding:0 6vw 8vw;max-width:780px;
+  }
+  .badge-row{display:flex;align-items:center;gap:10px;margin-bottom:22px;}
+  .eyebrow{
+    font-size:0.78rem;letter-spacing:0.35em;color:var(--gold);font-weight:700;
+    display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before,.eyebrow::after{content:'';height:1px;width:28px;background:var(--gold);opacity:0.6;}
+  .hero h1{
+    font-size:clamp(2.8rem,8vw,6.2rem);color:var(--cream);margin:0 0 6px;
+  }
+  .hero h1 .hit{color:var(--gold);}
+  .hero h1 .diff{
+    -webkit-text-stroke:1.5px var(--cream);color:transparent;
+  }
+  .hero p.sub{
+    font-size:1.05rem;color:var(--ash);max-width:480px;margin:20px 0 32px;line-height:1.6;
+  }
+  .hero-actions{display:flex;gap:16px;flex-wrap:wrap;align-items:center;}
+  .btn-primary{
+    background:var(--ember);color:var(--char);padding:16px 30px;font-weight:900;
+    font-family:'Anton',sans-serif;letter-spacing:0.06em;text-transform:uppercase;font-size:0.95rem;
+    border-radius:2px;box-shadow:0 8px 24px rgba(228,83,27,0.35);
+    transition:transform .2s, box-shadow .2s;
+    position:relative;
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(228,83,27,0.5);}
+  .btn-secondary{
+    border:1.5px solid var(--ash);color:var(--cream);padding:15px 26px;font-size:0.85rem;
+    letter-spacing:0.1em;text-transform:uppercase;font-weight:700;border-radius:2px;
+    transition:border-color .2s, color .2s;
+  }
+  .btn-secondary:hover{border-color:var(--gold);color:var(--gold);}
+
+  .seal{
+    position:absolute;top:14%;right:6vw;z-index:3;width:150px;height:150px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  @media(max-width:760px){.seal{display:none;}}
+
+  /* charred torn divider */
+  .torn{
+    position:relative;height:56px;width:100%;
+    background:var(--char);
+    clip-path:polygon(0% 100%,2% 40%,5% 80%,9% 30%,13% 65%,17% 15%,22% 55%,26% 25%,31% 70%,35% 20%,40% 60%,45% 10%,50% 50%,55% 15%,60% 65%,65% 25%,70% 60%,75% 20%,80% 55%,85% 15%,90% 60%,95% 30%,100% 70%,100% 100%);
+  }
+
+  /* ---------- section shell ---------- */
+  section{padding:100px 6vw;position:relative;}
+  .section-head{max-width:640px;margin:0 0 56px;}
+  .section-head .eyebrow{margin-bottom:14px;}
+  .section-head h2{font-size:clamp(2rem,4.4vw,3.2rem);color:var(--cream);}
+  .section-head h2 span{color:var(--ember);}
+  .section-head p{color:var(--ash);font-size:1.02rem;line-height:1.7;margin-top:16px;}
+
+  /* ---------- features ---------- */
+  .features{background:var(--char-2);}
+  .feature-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06);
+  }
+  .feature{
+    background:var(--char-2);padding:38px 26px;transition:background .25s;
+  }
+  .feature:hover{background:#241a13;}
+  .f-icon{
+    width:44px;height:44px;border:1.5px solid var(--ember);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;margin-bottom:22px;color:var(--ember);font-size:1.2rem;
+  }
+  .feature h3{font-size:1.1rem;color:var(--cream);margin:0 0 10px;}
+  .feature p{color:var(--ash);font-size:0.9rem;line-height:1.6;margin:0;}
+  @media(max-width:900px){.feature-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:520px){.feature-grid{grid-template-columns:1fr;}}
+
+  /* ---------- spice meter / signature ---------- */
+  .spice-section{
+    display:grid;grid-template-columns:1.1fr 0.9fr;gap:60px;align-items:center;
+  }
+  @media(max-width:860px){.spice-section{grid-template-columns:1fr;gap:40px;}}
+  .meter-card{
+    background:var(--char-2);border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:40px;
+  }
+  .meter-row{display:flex;align-items:center;gap:18px;margin-bottom:26px;}
+  .meter-row:last-child{margin-bottom:0;}
+  .meter-label{width:130px;font-size:0.82rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ash);font-weight:700;}
+  .meter-track{flex:1;height:10px;background:rgba(255,255,255,0.08);border-radius:6px;overflow:hidden;position:relative;}
+  .meter-fill{
+    height:100%;border-radius:6px;background:linear-gradient(90deg,var(--deep-red),var(--ember),var(--gold));
+    transform-origin:left;transform:scaleX(0);animation:fillbar 1.4s ease forwards;
+  }
+  @keyframes fillbar{to{transform:scaleX(1);}}
+  .meter-track .m1{animation-delay:.1s;}
+  .meter-track .m2{animation-delay:.3s;}
+  .meter-track .m3{animation-delay:.5s;}
+
+  /* ---------- menu strip ---------- */
+  .menu-strip{background:var(--char-2);}
+  .menu-list{display:flex;flex-direction:column;border-top:1px solid rgba(255,255,255,0.1);}
+  .menu-item{
+    display:flex;justify-content:space-between;align-items:baseline;gap:20px;
+    padding:26px 0;border-bottom:1px solid rgba(255,255,255,0.1);
+  }
+  .menu-item .name{font-family:'Anton',sans-serif;font-size:1.4rem;text-transform:uppercase;color:var(--cream);}
+  .menu-item .name .tag{
+    font-family:'DM Sans',sans-serif;font-size:0.7rem;color:var(--ember);border:1px solid var(--ember);
+    padding:2px 8px;border-radius:20px;margin-left:12px;letter-spacing:0.08em;vertical-align:middle;
+  }
+  .menu-item .desc{color:var(--ash);font-size:0.9rem;max-width:420px;margin-top:6px;font-family:'DM Sans',sans-serif;text-transform:none;font-weight:400;}
+  .menu-item .price{font-family:'JetBrains Mono',monospace;color:var(--gold);font-weight:700;white-space:nowrap;}
+
+  /* ---------- chinese/soup menu ---------- */
+  .cat-label{
+    display:inline-block;background:var(--deep-red);color:var(--cream);
+    font-family:'Anton',sans-serif;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;
+    padding:8px 18px;border-radius:2px;margin:44px 0 0;
+  }
+  .cat-label:first-child{margin-top:0;}
+  .cat-sub{color:var(--ash);font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;margin-left:14px;}
+  .menu-item.compact{padding:16px 0;}
+  .menu-item.compact .name{font-size:1.05rem;}
+  .menu-item .price.two{color:var(--ash);font-size:0.82rem;}
+  .menu-item .price.two b{color:var(--gold);font-family:'JetBrains Mono',monospace;}
+
+  /* ---------- add to cart ---------- */
+  .menu-item{flex-wrap:wrap;}
+  .price-block{display:flex;align-items:center;gap:14px;}
+  .half-full{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+  .add-btn{
+    background:transparent;border:1.5px solid var(--ember);color:var(--ember);
+    font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:700;
+    padding:8px 14px;border-radius:20px;cursor:pointer;white-space:nowrap;
+    transition:background .2s, color .2s, transform .15s;
+  }
+  .add-btn:hover{background:var(--ember);color:var(--char);}
+  .add-btn:active{transform:scale(0.94);}
+  .add-btn.added{background:var(--gold);border-color:var(--gold);color:var(--char);}
+
+  .cart-fab{
+    position:fixed;bottom:26px;right:26px;z-index:45;
+    background:var(--ember);color:var(--char);border:none;border-radius:50px;
+    padding:16px 22px;font-family:'Anton',sans-serif;letter-spacing:0.04em;text-transform:uppercase;
+    font-size:0.95rem;display:flex;align-items:center;gap:10px;cursor:pointer;
+    box-shadow:0 10px 26px rgba(228,83,27,0.45);transition:transform .2s;
+  }
+  .cart-fab:hover{transform:translateY(-2px);}
+  .cart-fab .badge{
+    background:var(--char);color:var(--gold);border-radius:50%;width:24px;height:24px;
+    display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-family:'JetBrains Mono',monospace;
+  }
+
+  .cart-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:60;
+    opacity:0;pointer-events:none;transition:opacity .25s;
+  }
+  .cart-overlay.open{opacity:1;pointer-events:auto;}
+  .cart-drawer{
+    position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);z-index:61;
+    background:var(--char-2);border-left:1px solid rgba(255,255,255,0.1);
+    display:flex;flex-direction:column;
+    transform:translateX(100%);transition:transform .3s ease;
+  }
+  .cart-drawer.open{transform:translateX(0);}
+  .cart-head{
+    padding:24px 24px 18px;border-bottom:1px solid rgba(255,255,255,0.08);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .cart-head h3{font-size:1.2rem;color:var(--cream);margin:0;}
+  .cart-close{background:none;border:none;color:var(--ash);font-size:1.4rem;cursor:pointer;line-height:1;}
+  .pickup-note{
+    margin:0 24px;padding:10px 14px;background:rgba(232,178,61,0.12);border:1px solid rgba(232,178,61,0.4);
+    border-radius:4px;color:var(--gold);font-size:0.8rem;font-weight:700;
+  }
+  .payment-badge{
+    display:flex;align-items:center;gap:6px;color:var(--ash);font-size:0.85rem;
+    background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+    padding:10px 14px;border-radius:4px;margin-bottom:14px;
+  }
+  .payment-badge b{color:var(--cream);}
+  .cart-body{flex:1;overflow-y:auto;padding:18px 24px;}
+  .cart-empty{color:var(--ash);font-size:0.92rem;text-align:center;margin-top:40px;}
+  .cart-row{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.07);
+  }
+  .cart-row .ci-name{font-size:0.92rem;color:var(--cream);}
+  .cart-row .ci-price{font-family:'JetBrains Mono',monospace;color:var(--gold);font-size:0.82rem;display:block;margin-top:2px;}
+  .qty-ctrl{display:flex;align-items:center;gap:8px;}
+  .qty-ctrl button{
+    width:26px;height:26px;border-radius:50%;border:1px solid var(--ash);background:none;color:var(--cream);
+    cursor:pointer;font-size:0.9rem;line-height:1;
+  }
+  .qty-ctrl span{font-family:'JetBrains Mono',monospace;min-width:16px;text-align:center;}
+  .cart-foot{padding:20px 24px 26px;border-top:1px solid rgba(255,255,255,0.08);}
+  .cart-total{display:flex;justify-content:space-between;color:var(--cream);font-family:'Anton',sans-serif;font-size:1.2rem;margin-bottom:16px;text-transform:uppercase;}
+  .cart-total span:last-child{color:var(--gold);}
+  .cart-field{
+    width:100%;background:var(--char);border:1px solid rgba(255,255,255,0.12);color:var(--cream);
+    padding:12px 14px;border-radius:4px;margin-bottom:10px;font-family:'DM Sans',sans-serif;font-size:0.92rem;
+  }
+  .cart-field::placeholder{color:#6b5f53;}
+  .whatsapp-btn{
+    width:100%;background:#25D366;color:#0b1a10;border:none;padding:15px;border-radius:4px;
+    font-family:'Anton',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:0.98rem;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+  }
+  .whatsapp-btn:hover{filter:brightness(1.08);}
+
+  /* ---------- opening banner ---------- */
+  .opening{
+    background:radial-gradient(ellipse at 30% 20%, #3a1a0d 0%, var(--char) 60%);
+    text-align:center;border-top:1px solid rgba(228,83,27,0.3);border-bottom:1px solid rgba(228,83,27,0.3);
+  }
+  .opening .eyebrow{justify-content:center;}
+  .opening h2{font-size:clamp(2.2rem,6vw,4.4rem);color:var(--cream);margin:18px 0 30px;}
+  .opening h2 .date{color:var(--gold);}
+  .countdown{
+    display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-bottom:40px;
+  }
+  .cd-box{
+    background:var(--char-2);border:1px solid rgba(255,255,255,0.1);border-radius:4px;
+    padding:20px 26px;min-width:96px;
+  }
+  .cd-box .num{font-family:'Anton',sans-serif;font-size:2.4rem;color:var(--ember);display:block;}
+  .cd-box .lbl{font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ash);}
+  .opening .time{
+    font-family:'JetBrains Mono',monospace;color:var(--gold);font-size:1.1rem;letter-spacing:0.05em;margin-bottom:36px;
+  }
+
+  /* ---------- contact / footer ---------- */
+  footer{
+    background:var(--char-2);padding:70px 6vw 40px;
+  }
+  .foot-grid{
+    display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:50px;padding-bottom:50px;border-bottom:1px solid rgba(255,255,255,0.08);
+  }
+  @media(max-width:800px){.foot-grid{grid-template-columns:1fr;gap:36px;}}
+  .foot-logo{font-family:'Anton',sans-serif;font-size:1.6rem;text-transform:uppercase;margin-bottom:14px;}
+  .foot-logo .n{color:var(--deep-red);}
+  footer p{color:var(--ash);font-size:0.92rem;line-height:1.7;max-width:340px;}
+  .foot-col h4{
+    font-size:0.78rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);margin:0 0 18px;
+  }
+  .foot-col a, .foot-col div{
+    display:block;color:var(--ash);font-size:0.92rem;margin-bottom:12px;
+  }
+  .foot-col a:hover{color:var(--ember);}
+  .foot-bottom{
+    display:flex;justify-content:space-between;align-items:center;padding-top:26px;flex-wrap:wrap;gap:10px;
+  }
+  .foot-bottom span{color:#6b5f53;font-size:0.8rem;}
+
+  /* scroll reveal */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease, transform .7s ease;}
+  .reveal.in{opacity:1;transform:none;}
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;}
+  }
+
+  @media(max-width:700px){
+    nav{display:none;}
+    .foot-grid, .spice-section, .feature-grid{gap:34px;}
+    .menu-item{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<button class="cart-fab" id="cartFab" type="button">
+  🛒 Cart <span class="badge" id="cartBadge">0</span>
+</button>
+
+<div class="cart-overlay" id="cartOverlay"></div>
+<aside class="cart-drawer" id="cartDrawer">
+  <div class="cart-head">
+    <h3>Your Order</h3>
+    <button class="cart-close" id="cartClose" type="button">✕</button>
+  </div>
+  <div class="pickup-note">🛍️ Self Pickup — order now, collect from the restaurant</div>
+  <div class="cart-body" id="cartBody">
+    <div class="cart-empty">Your cart is empty — add something spicy.</div>
+  </div>
+  <div class="cart-foot">
+    <div class="cart-total"><span>Total</span><span id="cartTotal">₹ 0</span></div>
+    <input class="cart-field" id="custName" placeholder="Your name" type="text">
+    <input class="cart-field" id="custPhone" placeholder="Your phone number" type="tel">
+    <input class="cart-field" id="custTime" placeholder="Pickup time (e.g. 6:30 PM)" type="text">
+    <div class="payment-badge">💵 Payment: <b>Cash on Pickup</b></div>
+    <button class="whatsapp-btn" id="sendOrder" type="button">Send Order on WhatsApp</button>
+  </div>
+</aside>
+
+<header>
+  <div class="logo">
+    <span class="flame">🔥</span>
+    <span>Hot <span class="n">'N'</span> Spice</span>
+  </div>
+  <nav>
+    <a href="#menu">Menu</a>
+    <a href="#opening">Grand Opening</a>
+    <a href="#visit">Visit</a>
+    <a href="tel:7304765335" class="nav-cta">Order Now</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <img class="hero-img" src="shawarma-hero.jpeg" alt="Grilled chicken shawarma wrap with fresh vegetables and sauce">
+  <div class="hero-scrim"></div>
+  <div class="seal mono" style="color:var(--gold);border:1px solid var(--gold);border-radius:50%;text-align:center;line-height:1.3;font-size:0.75rem;padding:16px;">
+    JUICY.<br>SPICY.<br>IRRESISTIBLE.
+  </div>
+  <div class="hero-content">
+    <div class="badge-row">
+      <span class="eyebrow">Restaurant &nbsp;·&nbsp; Bite Into Flavor</span>
+    </div>
+    <h1>Shawarma<br>that <span class="hit">hits</span><br><span class="diff">different.</span></h1>
+    <p class="sub">Hand-stacked, char-grilled, and rolled to order on National Highway 66. This is the shawarma Gadgilwadi has been waiting for.</p>
+    <div class="hero-actions">
+      <a href="#opening" class="btn-primary">Grab Your Shawarma</a>
+      <a href="tel:7304765335" class="btn-secondary">Call 730 476 5335</a>
+    </div>
+  </div>
+</section>
+
+<div class="torn"></div>
+
+<section class="features reveal">
+  <div class="section-head">
+    <span class="eyebrow">Why Hot 'N' Spice</span>
+    <h2>Built on <span>four</span> non-negotiables.</h2>
+  </div>
+  <div class="feature-grid">
+    <div class="feature">
+      <div class="f-icon">◆</div>
+      <h3>Premium Ingredients</h3>
+      <p>Chicken, sauces, and bread sourced for flavor first, never for shortcuts.</p>
+    </div>
+    <div class="feature">
+      <div class="f-icon">🌶</div>
+      <h3>Perfectly Spiced</h3>
+      <p>A house spice blend rubbed in and grilled on, so every bite carries the heat.</p>
+    </div>
+    <div class="feature">
+      <div class="f-icon">✓</div>
+      <h3>Fresh &amp; Hygienic</h3>
+      <p>Prepped daily in a clean kitchen you can watch from the counter.</p>
+    </div>
+    <div class="feature">
+      <div class="f-icon">★</div>
+      <h3>Made to Satisfy</h3>
+      <p>Bigger stacks, tighter rolls, no bite that leaves you wanting more.</p>
+    </div>
+  </div>
+</section>
+
+<section class="reveal">
+  <div class="spice-section">
+    <div>
+      <div class="section-head" style="margin-bottom:0;">
+        <span class="eyebrow">The House Blend</span>
+        <h2>We don't season lightly. <span>We season deliberately.</span></h2>
+        <p>Every shawarma is layered — marinade first, char second, sauce last — so the spice builds instead of overwhelms. Tell us how far to take it.</p>
+      </div>
+    </div>
+    <div class="meter-card">
+      <div class="meter-row">
+        <span class="meter-label">Mild</span>
+        <div class="meter-track"><div class="meter-fill m1" style="width:35%"></div></div>
+      </div>
+      <div class="meter-row">
+        <span class="meter-label">Signature Hot</span>
+        <div class="meter-track"><div class="meter-fill m2" style="width:70%"></div></div>
+      </div>
+      <div class="meter-row">
+        <span class="meter-label">Hits Different</span>
+        <div class="meter-track"><div class="meter-fill m3" style="width:96%"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="torn"></div>
+
+<section class="menu-strip reveal" id="menu">
+  <div class="section-head">
+    <span class="eyebrow">On The Grill</span>
+    <h2>A menu built around <span>one</span> perfect roll.</h2>
+  </div>
+  <div class="menu-list">
+    <div class="menu-item" data-name="Classic Shawarma" data-price="90">
+      <div>
+        <span class="name">Classic Shawarma<span class="tag">Bestseller</span></span>
+        <div class="desc">Char-grilled chicken, fresh veg, and house sauce rolled tight.</div>
+      </div>
+      <div class="price-block">
+        <span class="price">₹ 90</span>
+        <button class="add-btn" type="button">+ Add</button>
+      </div>
+    </div>
+    <div class="menu-item" data-name="Classic Cheese Shawarma" data-price="110">
+      <div>
+        <span class="name">Classic Cheese Shawarma</span>
+        <div class="desc">Our classic, loaded with molten cheese.</div>
+      </div>
+      <div class="price-block">
+        <span class="price">₹ 110</span>
+        <button class="add-btn" type="button">+ Add</button>
+      </div>
+    </div>
+    <div class="menu-item" data-name="Mexican Shawarma" data-price="100">
+      <div>
+        <span class="name">Mexican Shawarma</span>
+        <div class="desc">Spiced with a bold Mexican-style salsa and sauce.</div>
+      </div>
+      <div class="price-block">
+        <span class="price">₹ 100</span>
+        <button class="add-btn" type="button">+ Add</button>
+      </div>
+    </div>
+    <div class="menu-item" data-name="Mexican Cheese Shawarma" data-price="120">
+      <div>
+        <span class="name">Mexican Cheese Shawarma</span>
+        <div class="desc">Mexican shawarma, topped with extra melted cheese.</div>
+      </div>
+      <div class="price-block">
+        <span class="price">₹ 120</span>
+        <button class="add-btn" type="button">+ Add</button>
+      </div>
+    </div>
+    <div class="menu-item" data-name="Hariyali Shawarma" data-price="100">
+      <div>
+        <span class="name">Hariyali Shawarma<span class="tag">Hot</span></span>
+        <div class="desc">Green mint-coriander marinade, grilled and rolled fresh.</div>
+      </div>
+      <div class="price-block">
+        <span class="price">₹ 100</span>
+        <button class="add-btn" type="button">+ Add</button>
+      </div>
+    </div>
+    <div class="menu-item" data-name="Hariyali Cheese Shawarma" data-price="120">
+      <div>
+        <span class="name">Hariyali Cheese Shawarma</span>
+        <div class="desc">Hariyali shawarma with a generous layer of cheese.</div>
+      </div>
+      <div class="price-block">
+        <span class="price">₹ 120</span>
+        <button class="add-btn" type="button">+ Add</button>
+      </div>
+    </div>
+    <div class="menu-item" data-name="Peri Peri Shawarma" data-price="100">
+      <div>
+        <span class="name">Peri Peri Shawarma<span class="tag">Hot</span></span>
+        <div class="desc">Fiery peri peri spice, char-grilled to order.</div>
+      </div>
+      <div class="price-block">
+        <span class="price">₹ 100</span>
+        <button class="add-btn" type="button">+ Add</button>
+      </div>
+    </div>
+    <div class="menu-item" data-name="Peri Peri Cheese Shawarma" data-price="120">
+      <div>
+        <span class="name">Peri Peri Cheese Shawarma</span>
+        <div class="desc">Peri peri shawarma, finished with melted cheese.</div>
+      </div>
+      <div class="price-block">
+        <span class="price">₹ 120</span>
+        <button class="add-btn" type="button">+ Add</button>
+      </div>
+    </div>
+    <div class="menu-item" data-name="Protein Box" data-price="150">
+      <div>
+        <span class="name">Protein Box</span>
+        <div class="desc">Grilled chicken and veg, boxed up without the wrap.</div>
+      </div>
+      <div class="price-block">
+        <span class="price">₹ 150</span>
+        <button class="add-btn" type="button">+ Add</button>
+      </div>
+    </div>
+    <div class="menu-item" data-name="Open Platter" data-price="170">
+      <div>
+        <span class="name">Open Platter</span>
+        <div class="desc">The full shawarma spread, open-style on a platter.</div>
+      </div>
+      <div class="price-block">
+        <span class="price">₹ 170</span>
+        <button class="add-btn" type="button">+ Add</button>
+      </div>
+    </div>
+  </div>
+
+  <span class="cat-label" style="margin-top:44px;">Extra Add-ons</span><span class="cat-sub">₹20 each</span>
+  <div class="menu-list">
+    <div class="menu-item compact" data-name="Add-on: Cheese" data-price="20">
+      <div><span class="name">🧀 Cheese</span></div>
+      <div class="price-block"><span class="price">₹ 20</span><button class="add-btn" type="button">+ Add</button></div>
+    </div>
+    <div class="menu-item compact" data-name="Add-on: Peri Peri" data-price="20">
+      <div><span class="name">🌶️ Peri Peri</span></div>
+      <div class="price-block"><span class="price">₹ 20</span><button class="add-btn" type="button">+ Add</button></div>
+    </div>
+    <div class="menu-item compact" data-name="Add-on: Fries" data-price="20">
+      <div><span class="name">🍟 Fries</span></div>
+      <div class="price-block"><span class="price">₹ 20</span><button class="add-btn" type="button">+ Add</button></div>
+    </div>
+    <div class="menu-item compact" data-name="Add-on: Chutneys" data-price="20">
+      <div><span class="name">🥣 Chutneys</span></div>
+      <div class="price-block"><span class="price">₹ 20</span><button class="add-btn" type="button">+ Add</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="menu-strip reveal" id="chinese">
+  <div class="section-head">
+    <span class="eyebrow">Also On The Menu</span>
+    <h2>Chinese &amp; <span>soups</span>, done our way.</h2>
+    <p>Half or full, veg or chicken — the wok side of the Hot 'N' Spice menu.</p>
+  </div>
+
+  <span class="cat-label">Soup</span><span class="cat-sub">Chicken · सूप</span>
+  <div class="menu-list">
+    <div class="menu-item compact" data-name="Chicken Manchow Soup" data-price="40">
+      <div><span class="name">Chicken Manchow Soup</span></div>
+      <div class="price-block"><span class="price">₹ 40</span><button class="add-btn" type="button">+ Add</button></div>
+    </div>
+    <div class="menu-item compact" data-name="Chicken Schezwan Soup" data-price="40">
+      <div><span class="name">Chicken Schezwan Soup</span></div>
+      <div class="price-block"><span class="price">₹ 40</span><button class="add-btn" type="button">+ Add</button></div>
+    </div>
+    <div class="menu-item compact" data-name="Chicken Garlic Soup" data-price="50">
+      <div><span class="name">Chicken Garlic Soup</span></div>
+      <div class="price-block"><span class="price">₹ 50</span><button class="add-btn" type="button">+ Add</button></div>
+    </div>
+    <div class="menu-item compact" data-name="Chicken Lung Fung Soup" data-price="50">
+      <div><span class="name">Chicken Lung Fung Soup</span></div>
+      <div class="price-block"><span class="price">₹ 50</span><button class="add-btn" type="button">+ Add</button></div>
+    </div>
+    <div class="menu-item compact" data-name="Chicken Clear Soup" data-price="40">
+      <div><span class="name">Chicken Clear Soup</span></div>
+      <div class="price-block"><span class="price">₹ 40</span><button class="add-btn" type="button">+ Add</button></div>
+    </div>
+    <div class="menu-item compact" data-name="Chicken Hot n Sour Soup" data-price="40">
+      <div><span class="name">Chicken Hot n Sour Soup</span></div>
+      <div class="price-block"><span class="price">₹ 40</span><button class="add-btn" type="button">+ Add</button></div>
+    </div>
+  </div>
+
+  <span class="cat-label">Vegetarian</span><span class="cat-sub">शाकाहारी</span>
+
+  <span class="cat-label" style="background:transparent;border:1px solid var(--gold);color:var(--gold);margin-top:26px;">Rice</span>
+  <div class="menu-list">
+    <div class="menu-item compact">
+      <div><span class="name">Fried Rice</span></div>
+      <div class="half-full">
+        <button class="add-btn" type="button" data-name="Fried Rice (Half)" data-price="80">+ Half ₹80</button>
+        <button class="add-btn" type="button" data-name="Fried Rice (Full)" data-price="150">+ Full ₹150</button>
+      </div>
+    </div>
+    <div class="menu-item compact">
+      <div><span class="name">Veg. Schezwan Rice</span></div>
+      <div class="half-full">
+        <button class="add-btn" type="button" data-name="Veg. Schezwan Rice (Half)" data-price="80">+ Half ₹80</button>
+        <button class="add-btn" type="button" data-name="Veg. Schezwan Rice (Full)" data-price="150">+ Full ₹150</button>
+      </div>
+    </div>
+    <div class="menu-item compact">
+      <div><span class="name">Veg. Tripple Rice</span></div>
+      <div class="half-full">
+        <button class="add-btn" type="button" data-name="Veg. Tripple Rice (Half)" data-price="100">+ Half ₹100</button>
+        <button class="add-btn" type="button" data-name="Veg. Tripple Rice (Full)" data-price="190">+ Full ₹190</button>
+      </div>
+    </div>
+  </div>
+
+  <span class="cat-label" style="background:transparent;border:1px solid var(--gold);color:var(--gold);">Noodles</span>
+  <div class="menu-list">
+    <div class="menu-item compact">
+      <div><span class="name">Veg. Hakka Noodles</span></div>
+      <div class="half-full">
+        <button class="add-btn" type="button" data-name="Veg. Hakka Noodles (Half)" data-price="90">+ Half ₹90</button>
+        <button class="add-btn" type="button" data-name="Veg. Hakka Noodles (Full)" data-price="170">+ Full ₹170</button>
+      </div>
+    </div>
+    <div class="menu-item compact">
+      <div><span class="name">Veg. Schezwan Noodles</span></div>
+      <div class="half-full">
+        <button class="add-btn" type="button" data-name="Veg. Schezwan Noodles (Half)" data-price="90">+ Half ₹90</button>
+        <button class="add-btn" type="button" data-name="Veg. Schezwan Noodles (Full)" data-price="170">+ Full ₹170</button>
+      </div>
+    </div>
+    <div class="menu-item compact">
+      <div><span class="name">Veg. Tripple Noodles</span></div>
+      <div class="half-full">
+        <button class="add-btn" type="button" data-name="Veg. Tripple Noodles (Half)" data-price="120">+ Half ₹120</button>
+        <button class="add-btn" type="button" data-name="Veg. Tripple Noodles (Full)" data-price="230">+ Full ₹230</button>
+      </div>
+    </div>
+    <div class="menu-item compact">
+      <div><span class="name">Veg. Chilly Noodles</span></div>
+      <div class="half-full">
+        <button class="add-btn" type="button" data-name="Veg. Chilly Noodles (Half)" data-price="120">+ Half ₹120</button>
+        <button class="add-btn" type="button" data-name="Veg. Chilly Noodles (Full)" data-price="230">+ Full ₹230</button>
+      </div>
+    </div>
+    <div class="menu-item compact">
+      <div><span class="name">Veg. Chopper Noodles</span></div>
+      <div class="half-full">
+        <button class="add-btn" type="button" data-name="Veg. Chopper Noodles (Half)" data-price="110">+ Half ₹110</button>
+        <button class="add-btn" type="button" data-name="Veg. Chopper Noodles (Full)" data-price="210">+ Full ₹210</button>
+      </div>
+    </div>
+    <div class="menu-item compact">
+      <div><span class="name">Veg. Sherpa Noodles</span></div>
+      <div class="half-full">
+        <button class="add-btn" type="button" data-name="Veg. Sherpa Noodles (Half)" data-price="110">+ Half ₹110</button>
+        <button class="add-btn" type="button" data-name="Veg. Sherpa Noodles (Full)" data-price="210">+ Full ₹210</button>
+      </div>
+    </div>
+    <div class="menu-item compact">
+      <div><span class="name">Veg. Thousand Noodles</span></div>
+      <div class="half-full">
+        <button class="add-btn" type="button" data-name="Veg. Thousand Noodles (Half)" data-price="120">+ Half ₹120</button>
+        <button class="add-btn" type="button" data-name="Veg. Thousand Noodles (Full)" data-price="230">+ Full ₹230</button>
+      </div>
+    </div>
+    <div class="menu-item compact">
+      <div><span class="name">Veg. Manchurian No.</span></div>
+      <div class="half-full">
+        <button class="add-btn" type="button" data-name="Veg. Manchurian No. (Half)" data-price="110">+ Half ₹110</button>
+        <button class="add-btn" type="button" data-name="Veg. Manchurian No. (Full)" data-price="210">+ Full ₹210</button>
+      </div>
+    </div>
+    <div class="menu-item compact">
+      <div><span class="name">Veg. Singaporean No.</span></div>
+      <div class="half-full">
+        <button class="add-btn" type="button" data-name="Veg. Singaporean No. (Half)" data-price="110">+ Half ₹110</button>
+        <button class="add-btn" type="button" data-name="Veg. Singaporean No. (Full)" data-price="210">+ Full ₹210</button>
+      </div>
+    </div>
+  </div>
+
+  <span class="cat-label" style="background:transparent;border:1px solid var(--gold);color:var(--gold);">Soup</span>
+  <div class="menu-list">
+    <div class="menu-item compact" data-name="Veg. Manchow Soup" data-price="40">
+      <div><span class="name">Veg. Manchow Soup</span></div>
+      <div class="price-block"><span class="price">₹ 40</span><button class="add-btn" type="button">+ Add</button></div>
+    </div>
+    <div class="menu-item compact" data-name="Veg. Schezwan Soup" data-price="40">
+      <div><span class="name">Veg. Schezwan Soup</span></div>
+      <div class="price-block"><span class="price">₹ 40</span><button class="add-btn" type="button">+ Add</button></div>
+    </div>
+    <div class="menu-item compact" data-name="Veg. Garlic Soup" data-price="50">
+      <div><span class="name">Veg. Garlic Soup</span></div>
+      <div class="price-block"><span class="price">₹ 50</span><button class="add-btn" type="button">+ Add</button></div>
+    </div>
+  </div>
+</section>
+
+<div class="torn"></div>
+
+<section class="opening reveal" id="opening">
+  <span class="eyebrow">Grand Opening</span>
+  <h2>Doors open <span class="date">27·07·26</span></h2>
+  <div class="countdown mono" id="countdown">
+    <div class="cd-box"><span class="num" id="cd-days">00</span><span class="lbl">Days</span></div>
+    <div class="cd-box"><span class="num" id="cd-hours">00</span><span class="lbl">Hours</span></div>
+    <div class="cd-box"><span class="num" id="cd-mins">00</span><span class="lbl">Mins</span></div>
+    <div class="cd-box"><span class="num" id="cd-secs">00</span><span class="lbl">Secs</span></div>
+  </div>
+  <div class="time">5:00 PM ONWARDS · NATIONAL HIGHWAY 66, GADGILWADI</div>
+  <a href="tel:7304765335" class="btn-primary">Reserve Your First Bite</a>
+</section>
+
+<div class="torn"></div>
+
+<footer id="visit">
+  <div class="foot-grid">
+    <div>
+      <div class="foot-logo">Hot <span class="n">'N'</span> Spice</div>
+      <p>Restaurant &amp; grill on National Highway 66. Bite into flavor, one roll at a time.</p>
+    </div>
+    <div class="foot-col">
+      <h4>Visit</h4>
+      <div>National Highway 66,<br>At Gadgilwadi,<br>Rajapur 416702</div>
+    </div>
+    <div class="foot-col">
+      <h4>Order</h4>
+      <a href="tel:7304765335">730 476 5335</a>
+      <a href="tel:8087670576">808 767 0576</a>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2026 Hot 'N' Spice Restaurant.</span>
+    <span>Grand opening · 27 July 2026 · 5 PM onwards</span>
+  </div>
+</footer>
+
+<script>
+  // countdown to grand opening
+  const target = new Date("2026-07-27T17:00:00");
+  function tick(){
+    const now = new Date();
+    let diff = target - now;
+    if(diff < 0) diff = 0;
+    const d = Math.floor(diff / (1000*60*60*24));
+    const h = Math.floor(diff / (1000*60*60) % 24);
+    const m = Math.floor(diff / (1000*60) % 60);
+    const s = Math.floor(diff / 1000 % 60);
+    document.getElementById('cd-days').textContent = String(d).padStart(2,'0');
+    document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-mins').textContent = String(m).padStart(2,'0');
+    document.getElementById('cd-secs').textContent = String(s).padStart(2,'0');
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:0.15});
+  revealEls.forEach(el=>io.observe(el));
+
+  // ---------- cart ----------
+  const ORDER_WHATSAPP_NUMBER = "918421649140"; // country code 91 + WhatsApp order number
+  let cart = []; // {name, price, qty}
+
+  const cartFab = document.getElementById('cartFab');
+  const cartBadge = document.getElementById('cartBadge');
+  const cartOverlay = document.getElementById('cartOverlay');
+  const cartDrawer = document.getElementById('cartDrawer');
+  const cartClose = document.getElementById('cartClose');
+  const cartBody = document.getElementById('cartBody');
+  const cartTotal = document.getElementById('cartTotal');
+  const sendOrderBtn = document.getElementById('sendOrder');
+
+  function openCart(){ cartOverlay.classList.add('open'); cartDrawer.classList.add('open'); }
+  function closeCart(){ cartOverlay.classList.remove('open'); cartDrawer.classList.remove('open'); }
+  cartFab.addEventListener('click', openCart);
+  cartClose.addEventListener('click', closeCart);
+  cartOverlay.addEventListener('click', closeCart);
+
+  function addToCart(name, price, btn){
+    const existing = cart.find(i => i.name === name);
+    if(existing){ existing.qty += 1; }
+    else{ cart.push({name, price, qty:1}); }
+    renderCart();
+    if(btn){
+      btn.classList.add('added');
+      btn.textContent = '✓ Added';
+      setTimeout(()=>{
+        btn.classList.remove('added');
+        btn.textContent = btn.dataset.label;
+      }, 900);
+    }
+  }
+
+  document.querySelectorAll('.add-btn').forEach(btn=>{
+    btn.dataset.label = btn.textContent;
+    btn.addEventListener('click', ()=>{
+      const item = btn.closest('[data-name]') || btn;
+      const name = btn.dataset.name || item.dataset.name;
+      const price = parseFloat(btn.dataset.price || item.dataset.price);
+      addToCart(name, price, btn);
+    });
+  });
+
+  function changeQty(index, delta){
+    cart[index].qty += delta;
+    if(cart[index].qty <= 0) cart.splice(index,1);
+    renderCart();
+  }
+
+  function renderCart(){
+    const count = cart.reduce((s,i)=>s+i.qty,0);
+    cartBadge.textContent = count;
+    if(cart.length === 0){
+      cartBody.innerHTML = '<div class="cart-empty">Your cart is empty — add something spicy.</div>';
+      cartTotal.textContent = '₹ 0';
+      return;
+    }
+    let total = 0;
+    cartBody.innerHTML = cart.map((item, idx)=>{
+      total += item.price * item.qty;
+      return `
+        <div class="cart-row">
+          <div>
+            <div class="ci-name">${item.name}</div>
+            <span class="ci-price">₹${item.price} × ${item.qty}</span>
+          </div>
+          <div class="qty-ctrl">
+            <button onclick="window.__cartChangeQty(${idx},-1)">−</button>
+            <span>${item.qty}</span>
+            <button onclick="window.__cartChangeQty(${idx},1)">+</button>
+          </div>
+        </div>`;
+    }).join('');
+    cartTotal.textContent = '₹ ' + total;
+  }
+  window.__cartChangeQty = changeQty;
+
+  sendOrderBtn.addEventListener('click', ()=>{
+    if(cart.length === 0){ openCart(); return; }
+    const name = document.getElementById('custName').value.trim();
+    const phone = document.getElementById('custPhone').value.trim();
+    const time = document.getElementById('custTime').value.trim();
+
+    let total = 0;
+    let lines = cart.map(i=>{
+      total += i.price * i.qty;
+      return `• ${i.name} x${i.qty} — ₹${i.price * i.qty}`;
+    }).join('\n');
+
+    let msg = `*New Self-Pickup Order — Hot 'N' Spice*\n\n${lines}\n\n*Total: ₹${total}*\n`;
+    msg += `\n*Name:* ${name || 'Not provided'}`;
+    msg += `\n*Phone:* ${phone || 'Not provided'}`;
+    msg += `\n*Pickup Time:* ${time || 'As soon as ready'}`;
+    msg += `\n*Payment:* Cash on Pickup`;
+    msg += `\n\n_Customer will come in person to collect this order._`;
+
+    const url = `https://wa.me/${ORDER_WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  });
+</script>
+</body>
+</html>
