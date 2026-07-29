@@ -303,11 +303,7 @@
   };
   firebase.initializeApp(firebaseConfig);
   // Ask Notification Permission
-if ("Notification" in window) {
-    Notification.requestPermission().then(permission => {
-        console.log("Notification:", permission);
-    });
-}
+
   const db = firebase.firestore();
 
   // ---------- PIN lock (PIN itself stored in Firestore settings/admin, default 1234) ----------
@@ -321,16 +317,21 @@ if ("Notification" in window) {
     if(doc.exists && doc.data().pin) currentPin = doc.data().pin;
   });
 
-  function tryUnlock(){
+function tryUnlock(){
     if(pinInput.value === currentPin){
       lockScreen.style.display = 'none';
       sessionStorage.setItem('hnsAdminUnlocked','1');
       unlockAudio();
       initAdmin();
+
+      if ("Notification" in window && Notification.permission === "default") {
+          Notification.requestPermission();
+      }
+
     } else {
       lockError.textContent = 'Galat PIN, dobara try karein.';
     }
-  }
+}
   pinSubmit.addEventListener('click', tryUnlock);
   pinInput.addEventListener('keydown', e=>{ if(e.key === 'Enter') tryUnlock(); });
 
