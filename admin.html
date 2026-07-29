@@ -302,6 +302,12 @@
     appId: "1:596207600859:web:cc358d26b712b0060cb8fe"
   };
   firebase.initializeApp(firebaseConfig);
+  // Ask Notification Permission
+if ("Notification" in window) {
+    Notification.requestPermission().then(permission => {
+        console.log("Notification:", permission);
+    });
+}
   const db = firebase.firestore();
 
   // ---------- PIN lock (PIN itself stored in Firestore settings/admin, default 1234) ----------
@@ -443,6 +449,12 @@
   }
 
   function startAlert(order){
+    if (Notification.permission === "granted") {
+    new Notification("🔔 New Order", {
+        body: `${order.name} - ₹${order.total}`,
+        icon: "logo.png"
+    });
+}
     if(!soundOn) return;
     beep();
     beepInterval = setInterval(beep, 700);
