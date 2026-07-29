@@ -319,6 +319,7 @@
     if(pinInput.value === currentPin){
       lockScreen.style.display = 'none';
       sessionStorage.setItem('hnsAdminUnlocked','1');
+      unlockAudio();
       initAdmin();
     } else {
       lockError.textContent = 'Galat PIN, dobara try karein.';
@@ -410,15 +411,34 @@
     this.classList.toggle('on', soundOn);
   });
 
+  function unlockAudio(){
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      // play a silent blip so the browser fully unlocks the audio channel
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      gain.gain.value = 0.0001;
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+    }catch(e){ console.error(e); }
+  }
+  // extra safety: unlock on the very first click anywhere on the page too
+  document.addEventListener('click', function once(){ unlockAudio(); document.removeEventListener('click', once); }, {once:true});
+
   function beep(){
     try{
       if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.type = 'square'; osc.frequency.value = 880;
-      gain.gain.value = 0.25;
-      osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      [880, 660].forEach((freq, i)=>{
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = 'square'; osc.frequency.value = freq;
+        gain.gain.value = 0.35;
+        const startAt = audioCtx.currentTime + i * 0.18;
+        osc.start(startAt); osc.stop(startAt + 0.16);
+      });
     }catch(e){ console.error(e); }
   }
 
