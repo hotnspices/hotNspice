@@ -4,9 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hot 'N' Spice — Admin</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#E4531B">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <style>
   :root{
     --char:#140F0C; --char-2:#1F1712; --char-3:#271c15; --ember:#E4531B; --deep-red:#A31D1D;
@@ -302,9 +307,15 @@
     appId: "1:596207600859:web:cc358d26b712b0060cb8fe"
   };
   firebase.initializeApp(firebaseConfig);
-  // Ask Notification Permission
-
   const db = firebase.firestore();
+
+  // ---------- OneSignal push notification setup ----------
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal){
+    await OneSignal.init({
+      appId: "34238f44-7170-4a6c-978f-44f1e08e12d0",
+    });
+  });
 
   // ---------- PIN lock (PIN itself stored in Firestore settings/admin, default 1234) ----------
   const lockScreen = document.getElementById('lockScreen');
@@ -317,21 +328,22 @@
     if(doc.exists && doc.data().pin) currentPin = doc.data().pin;
   });
 
-function tryUnlock(){
+  function tryUnlock(){
     if(pinInput.value === currentPin){
       lockScreen.style.display = 'none';
       sessionStorage.setItem('hnsAdminUnlocked','1');
       unlockAudio();
-      initAdmin();
-
-      if ("Notification" in window && Notification.permission === "default") {
-          Notification.requestPermission();
+      if("Notification" in window && Notification.permission === "default"){
+        Notification.requestPermission();
       }
-
+      OneSignalDeferred.push(async function(OneSignal){
+        await OneSignal.Notifications.requestPermission();
+      });
+      initAdmin();
     } else {
       lockError.textContent = 'Galat PIN, dobara try karein.';
     }
-}
+  }
   pinSubmit.addEventListener('click', tryUnlock);
   pinInput.addEventListener('keydown', e=>{ if(e.key === 'Enter') tryUnlock(); });
 
@@ -450,12 +462,12 @@ function tryUnlock(){
   }
 
   function startAlert(order){
-    if (Notification.permission === "granted") {
-    new Notification("🔔 New Order", {
-        body: `${order.name} - ₹${order.total}`,
-        icon: "logo.png"
-    });
-}
+    if("Notification" in window && Notification.permission === "granted"){
+      new Notification("🔔 New Order — Hot 'N' Spice", {
+        body: `${order.name || 'Customer'} — ₹${order.total}`,
+        icon: "icon-192.png"
+      });
+    }
     if(!soundOn) return;
     beep();
     beepInterval = setInterval(beep, 700);
@@ -672,6 +684,10 @@ function tryUnlock(){
   if(sessionStorage.getItem('hnsAdminUnlocked') === '1'){
     lockScreen.style.display = 'none';
     initAdmin();
+  }
+
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(e=>console.error('SW registration failed', e));
   }
 </script>
 </body>
